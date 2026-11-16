@@ -30,7 +30,9 @@ curl -fsSL https://raw.githubusercontent.com/robinsmets/calculator-hulp/main/upd
 ```
 
 De eerste keer vraagt hij om de map van de extensie: sleep die map in het
-Terminal-venster en druk op Enter. Daarna onthoudt hij de map. Hij haalt de
+Terminal-venster en druk op Enter. Daarna onthoudt hij de map. Hij zet ook een icoon
+"Calculator hulp bijwerken" op je bureaublad: de volgende keer is bijwerken
+dubbelklikken op dat icoon. Hij haalt de
 nieuwste versie op en vervangt de bestanden in die map. Klik daarna in
 `chrome://extensions` bij de extensie op het rondje (opnieuw laden).
 
@@ -42,7 +44,9 @@ irm https://raw.githubusercontent.com/robinsmets/calculator-hulp/main/update-win
 ```
 
 De eerste keer opent er een venster om de map van de extensie te kiezen; daarna
-onthoudt hij de map. Klik daarna in `chrome://extensions` bij de extensie op het
+onthoudt hij de map. Hij zet ook een icoon
+"Calculator hulp bijwerken" op je bureaublad: de volgende keer is bijwerken
+dubbelklikken op dat icoon. Klik daarna in `chrome://extensions` bij de extensie op het
 rondje (opnieuw laden).
 
 **Met de hand:** download de nieuwe zip en vervang de bestanden in je

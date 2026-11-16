@@ -54,6 +54,17 @@ function Update-CalculatorHulp {
 
   Set-Content -Path $remembered -Value $folder
 
+  # A desktop icon that runs this same line, so the next update is a double
+  # click. Made here rather than downloaded: a file created on the machine
+  # itself carries no internet mark, so SmartScreen does not warn about it.
+  # GetFolderPath, because the desktop is often moved into OneDrive.
+  $shortcut = Join-Path ([Environment]::GetFolderPath("Desktop")) "Calculator hulp bijwerken.bat"
+  if (-not (Test-Path $shortcut)) {
+    $line = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$repo/main/update-windows.ps1 | iex`""
+    Set-Content -Path $shortcut -Value @("@echo off", $line, "pause") -Encoding Ascii
+    Write-Host "Op je bureaublad staat nu `"Calculator hulp bijwerken`": dubbelklik daarop voor de volgende update."
+  }
+
   if ($current -eq $latest) { Write-Host "$($manifest.name) $current is al de nieuwste versie."; return }
 
   $work = Join-Path $env:TEMP ("calculator-hulp-" + [guid]::NewGuid())

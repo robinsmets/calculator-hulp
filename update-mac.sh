@@ -53,6 +53,16 @@ fi
 
 echo "$folder" > "$REMEMBERED"
 
+# A desktop icon that runs this same line, so the next update is a double
+# click. Made here rather than downloaded: a file created on the machine
+# itself carries no quarantine mark, so macOS opens it without a warning.
+shortcut="$HOME/Desktop/Calculator hulp bijwerken.command"
+if [ -d "$HOME/Desktop" ] && [ ! -f "$shortcut" ]; then
+  printf '#!/bin/bash\ncurl -fsSL https://raw.githubusercontent.com/%s/main/update-mac.sh | bash\n' "$repo" > "$shortcut"
+  chmod +x "$shortcut"
+  echo "Op je bureaublad staat nu \"Calculator hulp bijwerken\": dubbelklik daarop voor de volgende update."
+fi
+
 if [ "$current" = "$latest" ]; then
   echo "$name $current is al de nieuwste versie."
   exit 0
