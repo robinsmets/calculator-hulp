@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculator hulp</title>
+  <link rel="stylesheet" href="src/ui/page.css">
+</head>
+<body class="popup">
+  <h1>
+    Calculator hulp
+    <span class="version" id="version"></span>
+  </h1>
+
+  <p>
+    Ga naar de Calculatietool op de "Ruimtes"-stap van een dossier.
+    Rechtsonder in beeld verschijnt automatisch een paneel met de totale
+    wandbreedte en -oppervlakte.
+  </p>
+
+  <div data-mount="settings"></div>
+
+  <p class="setting-hint">
+    Paneel niet zichtbaar (bv. per ongeluk buiten beeld gesleept)?
+  </p>
+  <button id="reset-position" type="button">
+    Positie resetten
+  </button>
+  <p id="reset-confirmation" class="confirmation" hidden>
+    Positie gereset — ga naar het tabblad met de Calculatietool, het paneel
+    staat weer rechtsonder.
+  </p>
+
+  <p>
+    Niets te zien? Open de DevTools-console (F12) en zoek naar regels met
+    <code>[Calculator-hulp]</code> voor details.
+  </p>
+  <p>
+    <a href="options.html" target="_blank">Meer instellingen</a>
+  </p>
+
+  <script type="module" src="src/pages/popup.js"></script>
+</body>
+</html>

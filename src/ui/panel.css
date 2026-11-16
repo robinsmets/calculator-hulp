@@ -1,0 +1,310 @@
+/*
+ * Panel styling.
+ *
+ * Loaded into a shadow root, so these rules cannot leak onto the host page and
+ * the host page's rules cannot reach in. That isolation is why plain class
+ * names are safe here and why no specificity tricks are needed — the original
+ * used inline styles on every element precisely because it had no such
+ * protection.
+ *
+ * Colours are custom properties so there is one place to adjust the palette.
+ */
+
+:host,
+.calc-panel {
+  --calc-bg: #1e3a5f;
+  --calc-fg: #ffffff;
+  --calc-rule: rgba(255, 255, 255, 0.25);
+  --calc-link: #9fc6ff;
+  --calc-warning: #ffb4a8;
+  --calc-warning-cumulative: #ffd48a;
+  --calc-shadow: rgba(0, 0, 0, 0.35);
+}
+
+/*
+ * WHERE THE PANEL SITS — on the host, and it has to be the host.
+ *
+ * These rules cannot move to the inner .calc-panel, however much they look
+ * like they belong with the rest of the panel's styling. A rule inside a shadow
+ * root does not reach the host element: only `:host` does. So positioning the
+ * inner element instead leaves the host `position: static` with a zero-height
+ * box, and everything that measures or moves the panel then operates on the
+ * wrong element.
+ *
+ * That is not hypothetical. It shipped: dragging set `left`/`top` on a static
+ * host where they did nothing, and grabOffset measured a 1280x0 rectangle. The
+ * panel looked perfectly normal, because the inner element was positioned by
+ * these same rules — it simply could not be moved.
+ *
+ * test/browser/panel.test.js covers it, and only a real browser can: a shadow
+ * root and a stylesheet are exactly what the Node stub does not have.
+ */
+:host {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  max-width: 290px;
+}
+
+.calc-panel {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--calc-bg);
+  color: var(--calc-fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  box-shadow: 0 4px 16px var(--calc-shadow);
+}
+
+/* ── title bar ─────────────────────────────────────────────────────────── */
+
+.calc-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  cursor: move;
+  user-select: none;
+}
+
+.calc-title {
+  font-weight: 600;
+  /* The only item allowed to shrink/truncate first — the controls after it
+     (minimize, reset) must stay clickable at their full size. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calc-minimize,
+.calc-reset {
+  cursor: pointer;
+  font-size: 11px;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* Larger than the text around them: the owner asked for every minimise arrow
+   to be easier to see, first in the P3 build, then in every build. */
+.calc-minimize,
+.calc-toggle-arrow {
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+/* ── rows ──────────────────────────────────────────────────────────────── */
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  opacity: 0.85;
+}
+
+/* A total. */
+.calc-row--total {
+  font-weight: 600;
+  opacity: 1;
+}
+
+/*
+ * This part exists but does not count towards the total. Meaning, not
+ * decoration — which is why the tests assert on a variant token rather than on
+ * the styling itself.
+ */
+.calc-row--dim {
+  opacity: 0.4;
+}
+
+/*
+ * An internal scroll box was tried here and reverted: the panel re-renders on
+ * every page mutation, which reset its scrollTop to 0 constantly — scrolling
+ * down to a gevel only to be thrown back to the top a moment later. Collapsed
+ * by default already keeps a long "Buitenkant gebouw" list out of the way;
+ * expanding it now shows the whole thing, scrolled with the panel/page like
+ * anything else.
+ */
+.calc-wall-list {
+  margin-top: 4px;
+}
+
+/* ── structure ─────────────────────────────────────────────────────────── */
+
+.calc-separator {
+  margin: 8px 0;
+  border-top: 1px solid var(--calc-rule);
+}
+
+.calc-heading {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.calc-note {
+  opacity: 0.75;
+}
+
+.calc-note--spaced {
+  margin-bottom: 6px;
+  opacity: 0.75;
+}
+
+.calc-meta {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.calc-meta--indented {
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.calc-hint {
+  margin-top: 2px;
+  font-size: 10.5px;
+  opacity: 0.6;
+}
+
+.calc-disclaimer {
+  margin-top: 8px;
+  font-size: 10.5px;
+  opacity: 0.7;
+}
+
+.calc-footnote {
+  margin-top: 6px;
+  font-size: 10.5px;
+  opacity: 0.7;
+}
+
+/* ── interactive ───────────────────────────────────────────────────────── */
+
+.calc-toggle-wrap {
+  margin-top: 8px;
+}
+
+.calc-toggle {
+  cursor: pointer;
+  font-size: 11px;
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* The P3 build's VAT situation buttons in the correction check. */
+.calc-vat-situations {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-size: 11px;
+}
+
+.calc-vat-situation {
+  cursor: pointer;
+  padding: 1px 6px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+.calc-vat-situation--active {
+  font-weight: 600;
+  opacity: 1;
+}
+
+.calc-link-wrap {
+  margin-top: 4px;
+}
+
+.calc-link {
+  color: var(--calc-link);
+}
+
+/* ── address ───────────────────────────────────────────────────────────── */
+
+.calc-address {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.calc-address--unknown {
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+/* ── corrections ───────────────────────────────────────────────────────── */
+
+.calc-count {
+  margin-top: 2px;
+  font-size: 10.5px;
+  opacity: 0.6;
+}
+
+.calc-warning-block {
+  margin-top: 6px;
+}
+
+/* A correction larger than the repair row it was matched to. */
+.calc-warning-title {
+  font-weight: 600;
+  color: var(--calc-warning);
+}
+
+/* Individually within budget, but over it together. */
+.calc-warning-title--cumulative {
+  font-weight: 600;
+  color: var(--calc-warning-cumulative);
+}
+
+.calc-warning-detail {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.calc-warning-cap {
+  font-size: 11px;
+}
+
+.calc-summary {
+  margin-top: 6px;
+  font-size: 10.5px;
+  opacity: 0.6;
+}
+
+/* ── settings pages ────────────────────────────────────────────────────── */
+/*
+ * The options and popup pages are ordinary extension pages, not the overlay,
+ * so these rules live alongside the panel's for one stylesheet to maintain.
+ */
+
+.setting {
+  margin-top: 14px;
+}
+
+.setting--checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting--inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.setting-hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #888;
+}
+
+.setting-group {
+  margin-top: 28px;
+}

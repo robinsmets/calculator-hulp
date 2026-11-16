@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Instellingen — Calculator hulp</title>
+  <link rel="stylesheet" href="src/ui/page.css">
+</head>
+<body>
+  <h1>
+    Instellingen
+    <span class="version" id="version"></span>
+  </h1>
+
+  <!--
+    Only the controls are generated, from src/config/settings-schema.js.
+    Headings and prose stay here, because that is copy rather than structure.
+  -->
+  <div data-mount="settings"></div>
+
+  <button id="save" type="button">
+    Opslaan
+  </button>
+  <span id="saved" hidden>
+    Opgeslagen ✓
+  </span>
+
+  <script type="module" src="src/pages/options.js"></script>
+</body>
+</html>
