@@ -57,12 +57,33 @@ function Update-CalculatorHulp {
   # A desktop icon that runs this same line, so the next update is a double
   # click. Made here rather than downloaded: a file created on the machine
   # itself carries no internet mark, so SmartScreen does not warn about it.
-  # GetFolderPath, because the desktop is often moved into OneDrive.
-  $shortcut = Join-Path ([Environment]::GetFolderPath("Desktop")) "Calculator hulp bijwerken.bat"
-  if (-not (Test-Path $shortcut)) {
+  # A .bat cannot carry an icon, so it lives in a folder of its own and the
+  # desktop gets a shortcut to it with the logo. Cosmetic: a failure here must
+  # not stop the update. GetFolderPath, because the desktop is often moved
+  # into OneDrive.
+  try {
+    $home_folder = Join-Path $env:USERPROFILE ".calculator-hulp"
+    New-Item -ItemType Directory -Force -Path $home_folder | Out-Null
+    $batch = Join-Path $home_folder "bijwerken.bat"
     $line = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/$repo/main/update-windows.ps1 | iex`""
-    Set-Content -Path $shortcut -Value @("@echo off", $line, "pause") -Encoding Ascii
-    Write-Host "Op je bureaublad staat nu `"Calculator hulp bijwerken`": dubbelklik daarop voor de volgende update."
+    Set-Content -Path $batch -Value @("@echo off", $line, "pause") -Encoding Ascii
+    $icon = Join-Path $home_folder "update-icon.ico"
+    Invoke-WebRequest "https://raw.githubusercontent.com/$repo/main/update-icon.ico" -OutFile $icon -UseBasicParsing
+
+    $desktop = [Environment]::GetFolderPath("Desktop")
+    # The plain .bat an earlier version of this script put on the desktop.
+    Remove-Item (Join-Path $desktop "Calculator hulp bijwerken.bat") -ErrorAction SilentlyContinue
+    $shortcut = Join-Path $desktop "Calculator hulp bijwerken.lnk"
+    $isNew = -not (Test-Path $shortcut)
+    $link = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut)
+    $link.TargetPath = $batch
+    $link.IconLocation = "$icon,0"
+    $link.Save()
+    if ($isNew) {
+      Write-Host "Op je bureaublad staat nu `"Calculator hulp bijwerken`": dubbelklik daarop voor de volgende update."
+    }
+  } catch {
+    Write-Host "Het icoon op het bureaublad kon niet worden gemaakt; het bijwerken gaat gewoon door."
   }
 
   if ($current -eq $latest) { Write-Host "$($manifest.name) $current is al de nieuwste versie."; return }

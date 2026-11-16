@@ -63,6 +63,24 @@ if [ -d "$HOME/Desktop" ] && [ ! -f "$shortcut" ]; then
   echo "Op je bureaublad staat nu \"Calculator hulp bijwerken\": dubbelklik daarop voor de volgende update."
 fi
 
+# The shortcut's logo, and ".command" hidden from its name. Done on every run,
+# so a shortcut made before the logo existed gets it too. Cosmetic: a failure
+# here must not stop the update.
+if [ -f "$shortcut" ]; then
+  icon="$(mktemp -d)/update-icon.png"
+  if curl -fsSL "https://raw.githubusercontent.com/$repo/main/update-icon.png" -o "$icon"; then
+    osascript -l JavaScript - "$icon" "$shortcut" > /dev/null 2>&1 <<'EOF' || true
+ObjC.import("AppKit");
+function run(argv) {
+  const image = $.NSImage.alloc.initWithContentsOfFile(argv[0]);
+  $.NSWorkspace.sharedWorkspace.setIconForFileOptions(image, argv[1], 0);
+  $.NSFileManager.defaultManager.setAttributesOfItemAtPathError($({ NSFileExtensionHidden: true }), argv[1], null);
+}
+EOF
+  fi
+  rm -rf "$(dirname "$icon")"
+fi
+
 if [ "$current" = "$latest" ]; then
   echo "$name $current is al de nieuwste versie."
   exit 0
