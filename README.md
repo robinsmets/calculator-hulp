@@ -34,6 +34,17 @@ Terminal-venster en druk op Enter. Daarna onthoudt hij de map. Hij haalt de
 nieuwste versie op en vervangt de bestanden in die map. Klik daarna in
 `chrome://extensions` bij de extensie op het rondje (opnieuw laden).
 
+**Op Windows, automatisch:** open PowerShell (Start-menu, typ "PowerShell"),
+plak deze regel en druk op Enter:
+
+```
+irm https://raw.githubusercontent.com/robinsmets/calculator-hulp/main/update-windows.ps1 | iex
+```
+
+De eerste keer opent er een venster om de map van de extensie te kiezen; daarna
+onthoudt hij de map. Klik daarna in `chrome://extensions` bij de extensie op het
+rondje (opnieuw laden).
+
 **Met de hand:** download de nieuwe zip en vervang de bestanden in je
 extensiemap door die uit de zip. Klik daarna in `chrome://extensions` op
 opnieuw laden. Het versienummer staat in het extensie-venster (klik op het
