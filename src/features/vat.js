@@ -7,7 +7,7 @@
  * situation buttons switch it to "all 0%" or "all 21%" for one dossier.
  */
 
-import { parseCorrectionRows, parseRepairRows, parseManualRows } from "../core/row-grammar.js";
+import { parseCorrectionRows, parseRepairRows, parseManualRows, findUnlabelledNegativeRows } from "../core/row-grammar.js";
 import {
   resolveVatKeywords, resolveVatExceptions, checkVatRate, applyVatSituation,
   REDUCED_VAT_PERCENTAGE, VAT_SITUATIONS, MIXED_VAT_SITUATION
@@ -76,6 +76,7 @@ export default {
     const rows = [
       ...parseRepairRows(formText).map((row) => ({ ...row, heading: row.code })),
       ...parseManualRows(formText).map((row) => ({ ...row, heading: "Eigen post" })),
+      ...findUnlabelledNegativeRows(formText).map((row) => ({ ...row, heading: "Eigen post" })),
       ...parseCorrectionRows(formText).map((row) => ({ ...row, heading: "Correctie" }))
     ]
       .filter((row) => row.vatPercentage != null)

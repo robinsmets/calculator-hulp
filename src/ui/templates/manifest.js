@@ -28,6 +28,7 @@ export const COMPONENT_TEMPLATES = [
   "components/corrections/exceeds",
   "components/corrections/missing-minus",
   "components/corrections/none",
+  "components/corrections/unlabelled",
   "components/corrections/section",
   "components/corrections/vat-mismatch",
 

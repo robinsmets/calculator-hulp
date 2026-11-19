@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Calculator hulp",
-  "version": "2.6.5",
+  "version": "2.6.6",
   "description": "Toont bij het calculeren automatisch de totale wand-/geveloppervlakte voor stucloper/afwerklaag, optioneel het aantal parkeeruren, en optioneel een correctie-check.",
   "permissions": ["storage"],
   "host_permissions": ["https://*.deatabix.nl/*"],

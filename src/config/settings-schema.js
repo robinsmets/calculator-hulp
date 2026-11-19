@@ -76,7 +76,7 @@ export const SETTINGS_SCHEMA = [
       options: "Correctie-check standaard tonen",
       popup: "Correctie-check tonen"
     },
-    hint: "Vergelijkt correctieregels (streepje-code + negatief bedrag) op tekst-gelijkenis met reparatieregels in dezelfde ruimte en flagt als de correctie hoger is. Matching is best-effort — controleer altijd zelf."
+    hint: "Vergelijkt correctieregels (streepje-code + negatief bedrag + 'correctie' of 'dossier') op tekst-gelijkenis met reparatieregels in dezelfde ruimte en flagt als de correctie hoger is. Matching is best-effort — controleer altijd zelf."
   },
   {
     key: "vatCheckEnabled",

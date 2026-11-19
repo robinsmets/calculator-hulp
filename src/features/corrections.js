@@ -6,7 +6,7 @@
  * so the link has to be inferred and the panel says as much.
  */
 
-import { parseCorrectionRows, parseRepairRows, parseManualRows, findMissingMinusCorrections } from "../core/row-grammar.js";
+import { parseCorrectionRows, parseRepairRows, parseManualRows, findMissingMinusCorrections, findUnlabelledNegativeRows } from "../core/row-grammar.js";
 import { matchCorrections } from "../core/correction-matching.js";
 import { resolveVatKeywords, resolveVatExceptions, checkVatRate } from "../core/vat-check.js";
 import { vatReason } from "./vat.js";
@@ -53,29 +53,31 @@ export default {
   action: "toggle-correctie",
 
   /**
-   * Contributes `corrections` and `missingMinus`.
+   * Contributes `corrections`, `missingMinus` and `unlabelled`.
    *
    * Reading ctx.formText is what triggers a walk of the whole document, so the
    * gate is not merely tidiness — it keeps that walk out of every render cycle
    * for users who have this switched off.
    */
   analyse(ctx) {
-    if (!ctx.settings.correctionCheckEnabled) return { corrections: [], missingMinus: [] };
+    if (!ctx.settings.correctionCheckEnabled) return { corrections: [], missingMinus: [], unlabelled: [] };
 
     const formText = ctx.formText;
     const correctionRows = parseCorrectionRows(formText);
     const repairRows = [...parseRepairRows(formText), ...parseManualRows(formText)];
     const missingMinus = findMissingMinusCorrections(formText);
+    const unlabelled = findUnlabelledNegativeRows(formText);
 
     ctx.log("correction rows found:", correctionRows);
     ctx.log("repair rows found:", repairRows);
     ctx.log("dash rows with a positive amount (mogelijk vergeten min-teken):", missingMinus);
+    ctx.log("dash rows with a negative amount, without correction words:", unlabelled);
 
     const matched = matchCorrections(correctionRows, repairRows, ctx.settings.correctionKeywords);
     ctx.log("correction matches:", matched);
 
     // The P3 build checks VAT in a section of its own, over every row; see vat.js.
-    if (ctx.p3) return { corrections: matched, missingMinus };
+    if (ctx.p3) return { corrections: matched, missingMinus, unlabelled };
 
     // Independent of the matching above: a stuc-/sauswerk correction must
     // carry 9% BTW regardless of whether it could be linked to a repair row.
@@ -87,20 +89,22 @@ export default {
     }));
     ctx.log("BTW-rate check:", corrections.filter((c) => c.vatMismatch));
 
-    return { corrections, missingMinus };
+    return { corrections, missingMinus, unlabelled };
   },
 
   hasData: (result) => !!((result.corrections && result.corrections.length) ||
-    (result.missingMinus && result.missingMinus.length)),
+    (result.missingMinus && result.missingMinus.length) ||
+    (result.unlabelled && result.unlabelled.length)),
 
   render(result, ctx, t) {
     const corrections = result.corrections || [];
     const missingMinus = result.missingMinus || [];
+    const unlabelled = result.unlabelled || [];
     const shared = {
       separator: t.render("components/separator")
     };
 
-    if (!corrections.length && !missingMinus.length) return t.render("components/corrections/none", shared);
+    if (!corrections.length && !missingMinus.length && !unlabelled.length) return t.render("components/corrections/none", shared);
 
     // Only the actionable cases get a full block; the rest are summarised in a
     // line. Otherwise every correction has to be read through again, which was
@@ -114,6 +118,10 @@ export default {
 
     const blocks =
       missingMinus.map((m) => t.render("components/corrections/missing-minus", {
+        amount: formatEuro(m.amount),
+        description: m.description
+      })).join("") +
+      unlabelled.map((m) => t.render("components/corrections/unlabelled", {
         amount: formatEuro(m.amount),
         description: m.description
       })).join("") +

@@ -7,9 +7,12 @@
  *   repair rows      a real code in the code column, e.g. B514
  *   correction rows  a dash instead of a code, plus a negative excl-VAT amount
  *
- * Correction wording is free text the user types — sometimes carrying a file
- * number, date or damage number, sometimes just a short description — so it
- * cannot be used to identify them. The negative amount is the decisive signal.
+ * Correction wording is free text the user types, but every correction the
+ * owner counts carries "correctie" or "dossier" somewhere in it. A dash row
+ * with a negative amount WITHOUT those words is a deliberate deduction (the
+ * owner hit "-1 pst de- en hermonteren brand-/rookmelder" reported as a
+ * correction without a match), so the owner chose: such a row is not a
+ * correction, but it is shown as a warning, see findUnlabelledNegativeRows.
  *
  * Every pattern fragment below has a reason attached. Several exist because a
  * stricter version turned out not to match the real page, and a whitespace
@@ -96,10 +99,10 @@ const DAMAGE_NUMBER_PATTERN = /schade\s+(\d+)/i;
 
 /**
  * Fixed words every genuine correction description carries, in some order:
- * "CORRECTIE(POST) DOSSIER <ref> ...". Not used to identify a correction row
- * — the dash marker plus negative amount already does that reliably, see the
- * module comment — but used as a confirming signal in two places: here, for
- * the missing-minus check below, and in vat-check.js, which strips these
+ * "CORRECTIE(POST) DOSSIER <ref> ...". Required, next to the dash marker and
+ * the negative amount, for a row to count as a correction (see the module
+ * comment). Also used for the missing-minus check below, and in
+ * vat-check.js, which strips these
  * words out before its own keyword search (a short custom keyword can
  * otherwise match this boilerplate instead of the actual work).
  */
@@ -243,8 +246,9 @@ export function parseCorrectionRows(text) {
 
   for (const row of scanRows(text, "-", CORRECTION_DESCRIPTION_CAP)) {
     // A dash row with a positive amount is not a correction. Note this also
-    // rejects 0 and -0.
-    if (row.amount >= 0) continue;
+    // rejects 0 and -0. Without the correction words it is a deduction the
+    // user made on purpose, see findUnlabelledNegativeRows.
+    if (row.amount >= 0 || !hasCorrectionBoilerplate(row.description)) continue;
 
     const description = row.description.trim();
     const { dossierRef, date, damageNumber, matchText, trefwoordTekst } = parseCorrectionDescription(description);
@@ -326,6 +330,26 @@ export function findMissingMinusCorrections(text) {
     .map((row) => ({
       description: row.description.trim(),
       amount: row.amount,
+      vatPercentage: row.vatPercentage
+    }));
+}
+
+/**
+ * A dash row with a negative amount whose description has none of the
+ * correction words: not counted as a correction (see the module comment), but
+ * the owner wants it flagged, since it may also be a correction typed without
+ * the usual text.
+ *
+ * @param {string} text text stream including form control values
+ * @returns {Array<{description: string, amount: number, vatPercentage: number|null}>}
+ *          amount is the positive magnitude, as on a CorrectionRow
+ */
+export function findUnlabelledNegativeRows(text) {
+  return scanRows(text, "-", CORRECTION_DESCRIPTION_CAP)
+    .filter((row) => row.amount < 0 && !hasCorrectionBoilerplate(row.description))
+    .map((row) => ({
+      description: row.description.trim(),
+      amount: Math.abs(row.amount),
       vatPercentage: row.vatPercentage
     }));
 }
